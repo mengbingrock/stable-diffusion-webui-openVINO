@@ -32,7 +32,6 @@ torch
 torchdiffeq
 torchsde
 diffusers
-openvino
 invisible-watermark
-transformers
+transformers==4.30.2
 

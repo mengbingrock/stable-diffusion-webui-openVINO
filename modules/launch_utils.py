@@ -9,6 +9,7 @@ import importlib.util
 import platform
 import json
 from functools import lru_cache
+import pkg_resources
 
 from modules import cmd_args, errors
 from modules.paths_internal import script_path, extensions_dir
@@ -28,6 +29,12 @@ default_command_live = (os.environ.get('WEBUI_LAUNCH_LIVE_OUTPUT') == "1")
 
 if 'GRADIO_ANALYTICS_ENABLED' not in os.environ:
     os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
+
+def get_version(package_name):
+    try:
+        return pkg_resources.get_distribution(package_name).version
+    except pkg_resources.DistributionNotFound:
+        return None
 
 
 def check_python_version():
@@ -308,13 +315,19 @@ def requirements_met(requirements_file):
 
 
 def prepare_environment():
-    if os.environ.get("USE_OPENVINO") == "1":
-        torch_command = os.environ.get('TORCH_COMMAND', "pip install torch==2.1.0 torchvision==0.16.0")
-        requirements_file = os.environ.get('REQS_FILE', "requirements_versions.txt")
-    else:
-        torch_index_url = os.environ.get('TORCH_INDEX_URL', "https://download.pytorch.org/whl/cu118")
-        torch_command = os.environ.get('TORCH_COMMAND', f"pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url {torch_index_url}")
-        requirements_file = os.environ.get('REQS_FILE', "requirements_versions.txt")
+    torch_index_url = os.environ.get('TORCH_INDEX_URL', "https://download.pytorch.org/whl/cu121")
+    torch_command = os.environ.get('TORCH_COMMAND', f"pip install torch==2.1.2 torchvision==0.16.2 --extra-index-url {torch_index_url}")
+
+    if args.use_openvino:
+        if not is_installed("openvino"): 
+            run_pip("install openvino>=2023.2.0", "openvino", True)
+            startup_timer.record("install openvino")
+        if not is_installed("diffusers"): 
+            run_pip("install diffusers>=0.23.0", "diffusers", True)
+            startup_timer.record("install diffusers")
+
+
+    requirements_file = os.environ.get('REQS_FILE', "requirements_versions.txt")
 
     xformers_package = os.environ.get('XFORMERS_PACKAGE', 'xformers==0.0.20')
     clip_package = os.environ.get('CLIP_PACKAGE', "https://github.com/openai/CLIP/archive/d50d76daa670286dd6cacf3bcd80b5e4823fc8e1.zip")
@@ -352,10 +365,11 @@ def prepare_environment():
     print(f"Version: {tag}")
     print(f"Commit hash: {commit}")
 
-    if args.reinstall_torch or not is_installed("torch") or not is_installed("torchvision"):
+    if args.reinstall_torch or not is_installed("torch") or not is_installed("torchvision") or get_version("torch") < "2.1.0":
         run(f'"{python}" -m {torch_command}', "Installing torch and torchvision", "Couldn't install torch", live=True)
         startup_timer.record("install torch")
 
+    if args.use_openvino: args.skip_torch_cuda_test = True
     if not args.skip_torch_cuda_test and not check_run_python("import torch; assert torch.cuda.is_available()"):
         raise RuntimeError(
             'Torch is not able to use GPU; '
