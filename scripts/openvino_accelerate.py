@@ -508,22 +508,22 @@ shared.sd_diffusers_model = sd_diffusers_model
 shared.sd_refiner_model = None
 
 def set_scheduler(sd_model, sampler_name):
-    if (sampler_name == "Euler a"):
-        sd_model.scheduler = EulerAncestralDiscreteScheduler.from_config(sd_model.scheduler.config)
-    elif (sampler_name == "Euler"):
-        sd_model.scheduler = EulerDiscreteScheduler.from_config(sd_model.scheduler.config)
-    elif (sampler_name == "LMS"):
-        sd_model.scheduler = LMSDiscreteScheduler.from_config(sd_model.scheduler.config)
-    elif (sampler_name == "Heun"):
-        sd_model.scheduler = HeunDiscreteScheduler.from_config(sd_model.scheduler.config)
-    elif (sampler_name == "DPM++ 2M"):
+    if   (sampler_name == "DPM++ 2M"):
         sd_model.scheduler = DPMSolverMultistepScheduler.from_config(sd_model.scheduler.config, algorithm_type="dpmsolver++", use_karras_sigmas=False)
-    elif (sampler_name == "LMS Karras"):
-        sd_model.scheduler = LMSDiscreteScheduler.from_config(sd_model.scheduler.config, use_karras_sigmas=True)
     elif (sampler_name == "DPM++ 2M Karras"):
         sd_model.scheduler = DPMSolverMultistepScheduler.from_config(sd_model.scheduler.config, algorithm_type="dpmsolver++", use_karras_sigmas=True)
     elif (sampler_name == "DDIM"):
         sd_model.scheduler = DDIMScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "Euler"):
+        sd_model.scheduler = EulerDiscreteScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "Euler a"):
+        sd_model.scheduler = EulerAncestralDiscreteScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "Heun"):
+        sd_model.scheduler = HeunDiscreteScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "LMS"):
+        sd_model.scheduler = LMSDiscreteScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "LMS Karras"):
+        sd_model.scheduler = LMSDiscreteScheduler.from_config(sd_model.scheduler.config, use_karras_sigmas=True)
     elif (sampler_name == "PLMS"):
         sd_model.scheduler = PNDMScheduler.from_config(sd_model.scheduler.config)
     else:
