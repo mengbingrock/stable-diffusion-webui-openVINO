@@ -45,6 +45,7 @@ from torch.utils._pytree import tree_flatten
 from hashlib import sha256
 
 from diffusers import (
+    LCMScheduler,
     StableDiffusionPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
@@ -529,6 +530,8 @@ def set_scheduler(sd_model, sampler_name):
         sd_model.scheduler = EulerAncestralDiscreteScheduler.from_config(sd_model.scheduler.config)
     elif (sampler_name == "Heun"):
         sd_model.scheduler = HeunDiscreteScheduler.from_config(sd_model.scheduler.config)
+    elif (sampler_name == "LCM"):
+        sd_model.scheduler = LCMScheduler.from_config(sd_model.scheduler.config)
     elif (sampler_name == "LMS"):
         sd_model.scheduler = LMSDiscreteScheduler.from_config(sd_model.scheduler.config)
     elif (sampler_name == "LMS Karras"):
@@ -589,7 +592,7 @@ def get_diffusers_sd_model(model_config, vae_ckpt, sampler_name, enable_caching,
                 if (len(model_state.control_models) > 1):
                     controlnet = []
                     for cn_model in model_state.control_models:
-                        cn_model_dir_path = os.path.join(curr_dir_path, 'extensions', 'sd-webui-controlnet', 'models')
+                        cn_model_dir_path = os.path.join(curr_dir_path,'models', 'ControlNet')
                         cn_model_path = os.path.join(cn_model_dir_path, cn_model)
                         if os.path.isfile(cn_model_path + '.pt'):
                             cn_model_path = cn_model_path + '.pt'
@@ -599,7 +602,7 @@ def get_diffusers_sd_model(model_config, vae_ckpt, sampler_name, enable_caching,
                             cn_model_path = cn_model_path + '.pth'
                         controlnet.append(ControlNetModel.from_single_file(cn_model_path, local_files_only=True))
                 else:
-                    cn_model_dir_path = os.path.join(curr_dir_path, 'extensions', 'sd-webui-controlnet', 'models')
+                    cn_model_dir_path = os.path.join(curr_dir_path,'models', 'ControlNet')
                     cn_model_path = os.path.join(cn_model_dir_path, model_state.control_models[0])
                     if os.path.isfile(cn_model_path + '.pt'):
                         cn_model_path = cn_model_path + '.pt'
@@ -625,7 +628,7 @@ def get_diffusers_sd_model(model_config, vae_ckpt, sampler_name, enable_caching,
                 if (len(model_state.control_models) > 1):
                     controlnet = []
                     for cn_model in model_state.control_models:
-                        cn_model_dir_path = os.path.join(curr_dir_path, 'extensions', 'sd-webui-controlnet', 'models')
+                        cn_model_dir_path = os.path.join(curr_dir_path,'models', 'ControlNet')
                         cn_model_path = os.path.join(cn_model_dir_path, cn_model)
                         if os.path.isfile(cn_model_path + '.pt'):
                             cn_model_path = cn_model_path + '.pt'
@@ -635,7 +638,7 @@ def get_diffusers_sd_model(model_config, vae_ckpt, sampler_name, enable_caching,
                             cn_model_path = cn_model_path + '.pth'
                         controlnet.append(ControlNetModel.from_single_file(cn_model_path, local_files_only=True))
                 else:
-                    cn_model_dir_path = os.path.join(curr_dir_path, 'extensions', 'sd-webui-controlnet', 'models')
+                    cn_model_dir_path = os.path.join(curr_dir_path,'models', 'ControlNet')
                     cn_model_path = os.path.join(cn_model_dir_path, model_state.control_models[0])
                     if os.path.isfile(cn_model_path + '.pt'):
                         cn_model_path = cn_model_path + '.pt'
@@ -845,7 +848,7 @@ def process_images_openvino(p: StableDiffusionProcessing, model_config, vae_ckpt
             cn_params = p.extra_generation_params[key]
             cn_param_elements = [part.strip() for part in cn_params.split(', ')]
             for element in cn_param_elements:
-                if (element.split(':')[0] == "model"):
+                if (element.split(':')[0] == "Model"):
                     cn_model = (element.split(':')[1]).split(' ')[1]
 
             if (cn_model != "None"):
