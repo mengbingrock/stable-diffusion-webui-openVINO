@@ -217,8 +217,8 @@ def openvino_fx(subgraph, example_inputs):
                 node.target = torch.ops.aten.mul.Tensor
         with torch.no_grad():
             model.eval()
-        partitioner = Partitioner()
-        compiled_model = partitioner.make_partitions(model)
+        partitioner = Partitioner(None)
+        compiled_model = partitioner.make_partitions(model, None)
 
         if executor_parameters is not None and 'model_hash_str' in executor_parameters:
             # Check if the model is fully supported.
